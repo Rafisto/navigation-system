@@ -1,8 +1,9 @@
 interface InputProps {
+    children?: React.ReactNode;
     className?: string;
     type?: string;
     placeholder?: string;
-    value: string;
+    value: string | number;
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -14,7 +15,7 @@ const InputComponent = (props: InputProps) => {
             placeholder={props.placeholder || ""}
             value={props.value}
             onChange={props.onChange}
-        />
+        >{props.children}</input>
     );
 }
 

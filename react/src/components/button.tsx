@@ -2,7 +2,7 @@ interface ButtonComponentProps {
     className?: string;
     children: JSX.Element | string;
     onClick: () => void;
-    loading?: boolean;
+    disabled?: boolean;
     loadingMessage?: string;
 }
 
@@ -11,9 +11,9 @@ const ButtonComponent = (props: ButtonComponentProps) => {
         <button
             onClick={props.onClick}
             className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 ${props.className}`}
-            disabled={props.loading}
+            disabled={props.disabled}
         >
-            {props.loading ? (
+            {props.disabled ? (
                 <span className="flex flex-row">
                     <svg
                         className="animate-spin h-5 w-5 mr-3 ..."

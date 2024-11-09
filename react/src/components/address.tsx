@@ -20,7 +20,7 @@ const SimulationAddress = (s: SimulationAddressProps) => {
                 ?
                 <ButtonComponent className="" onClick={() => s.disconnectHandler()}>Disconnect</ButtonComponent>
                 :
-                <ButtonComponent loading={s.loading} loadingMessage={s.loadingMessage} className="" onClick={() => s.connectHandler(address)}>Connect</ButtonComponent>
+                <ButtonComponent disabled={s.loading} loadingMessage={s.loadingMessage} className="" onClick={() => s.connectHandler(address)}>Connect</ButtonComponent>
             }
         </div>
     )

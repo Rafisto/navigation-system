@@ -1,9 +1,9 @@
 import L from 'leaflet';
 import { CSSProperties } from 'react';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, useMap, Polyline } from 'react-leaflet';
 import { Point } from './app';
 
-const COLORS = ['red', 'blue', 'green', 'gold', 'orange', 'violet', 'grey', 'black'];
+// const COLORS = ['red', 'blue', 'green', 'gold', 'orange', 'violet', 'grey', 'black'];
 
 const customIcon = (color: string) => new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
@@ -42,24 +42,27 @@ const MapComponent = ({ drone, points, setPoints }: MapComponentProps) => {
         setPoints(updatedMarkers);
     };
 
-    return <MapContainer style={MapContainerStyle} center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}>
-        <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <MapClick />
-        {
-            points.map((point, idx) => (
+    return (
+        <MapContainer style={MapContainerStyle} center={[-35.3632621, 149.1652374]} zoom={13} scrollWheelZoom={true}>
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapClick />
+            {points.map((point, idx) => (
                 <div key={`marker-${idx}`} style={{ padding: '5px' }}>
                     <Marker position={[point.latitude, point.longitude]} icon={customIcon("red")} eventHandlers={{ click: () => MarkerClick(idx) }} />
                 </div>
-            ))
-        }
-        <div key={`marker-drone`} style={{ padding: '5px' }}>
-            <Marker position={[drone.latitude, drone.longitude]} icon={customIcon("blue")} />
-        </div>
-    </MapContainer>
-
+            ))}
+            <div key={`marker-drone`} style={{ padding: '5px' }}>
+                <Marker position={[drone.latitude, drone.longitude]} icon={customIcon("blue")} />
+            </div>
+            <Polyline
+                positions={points.map(point => [point.latitude, point.longitude])}
+                color="red" 
+            />
+        </MapContainer>
+    );
 }
 
 export default MapComponent;
