@@ -1,81 +1,98 @@
 from flask import Flask, jsonify
+from flask_socketio import SocketIO, emit
 from flask_cors import CORS
+
 from pymavlink import mavutil
 from pymavlink.dialects.v20 import ardupilotmega as messages
+
+from threading import Thread
+
 import time
+import json
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-connection = mavutil.mavlink_connection("127.0.0.1:14550") # default ardupilot port
-connection.wait_heartbeat()
+telemetry_thread = None
+mavconnection = None
+telemetry = None
 
-@app.get('/api/')
-def home():
-    return jsonify(message="Welcome to the System")
 
-@app.get('/api/takeoff')
-def takeoff():
-    # mavlink based on https://mavlink.io/en/messages/common.html
-    # copter modes flight modes https://ardupilot.org/copter/docs/flight-modes.html
-    msg = messages.MAVLink_command_long_message(
-        # ground listed from 255
-        # drone (device) listed from 0
-        connection.target_system, # which drone
-        connection.target_component, # which component
-        messages.MAV_CMD_DO_SET_MODE, # command
-        0, # confirmation
-        1, # mode (nothing changes)
-        4, # GUIDED, see FLTMODE at https://ardupilot.org/copter/docs/parameters.html#fldmode1
-        0,
-        0,
-        0,
-        0,
-        0
-    )
+def generate_telemetry_data():
+    global mavconnection
+    if mavconnection is None:
+        return {}
+    local_position_ned = mavconnection.recv_match(
+        type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    gps_raw_int = mavconnection.recv_match(
+        type='GPS_RAW_INT', blocking=True).to_dict()
+    return {'x': local_position_ned.get('x'),
+            'y': local_position_ned.get('y'),
+            'z': local_position_ned.get('z'),
+            'lat': gps_raw_int.get('lat') * 10**(-7),
+            'lon': gps_raw_int.get('lon') * 10**(-7)}
 
-    connection.mav.send(msg)
 
-    msg = messages.MAVLink_command_long_message(
-        # ground listed from 255
-        # drone (device) listed from 0
-        connection.target_system, # which drone
-        connection.target_component, # which component
-        messages.MAV_CMD_COMPONENT_ARM_DISARM, # command
-        0, # confirmation
-        1, # 1 - ARM, 0 - DISARM
-        0, 
-        0,
-        0,
-        0,
-        0,
-        0
-    )
+def telemetry_background_task():
+    while True:
+        telemetry_data = generate_telemetry_data()
+        socketio.emit('telemetry', telemetry_data)
+        time.sleep(0.1)
 
-    connection.mav.send(msg)
 
-    time.sleep(5)
+@socketio.on('create_connection')
+def create_connection(data):
+    global mavconnection
+    data = json.loads(data)
+    address = data.get('address')
 
-    msg = messages.MAVLink_command_long_message(
-        # ground listed from 255
-        # drone (device) listed from 0
-        connection.target_system, # which drone
-        connection.target_component, # which component
-        messages.MAV_CMD_NAV_TAKEOFF, # command
-        0, # confirmation
-        0, # pitch
-        0, # roll
-        0, # yaw
-        0, # latitude
-        0, # longitude
-        0,
-        10 # altitude
-    )
-    
-    connection.mav.send(msg)
-    
-    return jsonify({"message": "Takeoff successful"}), 200
-    
+    if not address:
+        emit('connection_response', {
+             'status': "error",
+             'message': "'address' parameter is missing"}, broadcast=False)
+        return
+
+    global telemetry_thread
+    if telemetry_thread is None:
+        telemetry_thread = Thread(target=telemetry_background_task)
+        telemetry_thread.start()
+
+    try:
+        mavconnection = mavutil.mavlink_connection(address)
+        mavconnection.wait_heartbeat()
+
+        mavconnection.mav.param_request_list_send(
+            mavconnection.target_system,
+            mavconnection.target_component)
+
+        emit('connection_response', {
+            'status': "connected",
+             'message': "Connection created"}, broadcast=False)
+    except Exception as e:
+        emit('connection_response', {
+            'status': "error",
+             'message': f"Connection failed: {str(e)}"}, broadcast=False)
+
+
+@socketio.on('close_connection')
+def close_connection():
+    global mavconnection
+
+    if mavconnection:
+        mavconnection.close()
+        emit('connection_response', {
+            'status': "disconnected",
+             'message': "Connection closed"}, broadcast=False)
+        mavconnection = None
+        telemetry_thread = None
+
+    else:
+        emit('connection_response', {
+            'status': "error",
+             'message': "Connection not found"}, broadcast=False)
+
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app=app, host="0.0.0.0", port=5000, debug=True)
