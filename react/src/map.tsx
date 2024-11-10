@@ -24,10 +24,12 @@ const MapContainerStyle: CSSProperties = {
 interface MapComponentProps {
     drone: Point;
     points: Point[];
+    missionPoints?: Point[];
+    currentDestination?: Point;
     setPoints: (points: Point[]) => void;
 }
 
-const MapComponent = ({ drone, points, setPoints }: MapComponentProps) => {
+const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoints }: MapComponentProps) => {
     const MapClick = () => {
         const map = useMap();
         map.on('click', (e) => {
@@ -59,8 +61,23 @@ const MapComponent = ({ drone, points, setPoints }: MapComponentProps) => {
             </div>
             <Polyline
                 positions={points.map(point => [point.latitude, point.longitude])}
-                color="red" 
+                color="red"
             />
+            {
+                missionPoints &&
+                <Polyline
+                    positions={missionPoints.map(point => [point.latitude, point.longitude])}
+                    color="yellow"
+                />
+            }
+            {currentDestination &&
+                <><Polyline
+                    positions={[[drone.latitude, drone.longitude], [currentDestination.latitude, currentDestination.longitude]]}
+                    color="yellow"
+                />
+                    <Marker position={[currentDestination.latitude, currentDestination.longitude]} icon={customIcon("yellow")} />
+                </>}
+
         </MapContainer>
     );
 }

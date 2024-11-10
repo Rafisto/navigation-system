@@ -195,6 +195,23 @@ def handle_move(data):
         drone_controller.move(x=x, y=y)
     emit('command_response', {'status': 'success',
          'message': f'Moved {direction}'})
+    
+@socketio.on('move_to')
+def handle_move_to(data):
+    lat = data.get('lat')
+    lon = data.get('lon')
+    alt = data.get('alt')
+    drone_controller.move_to(lat, lon, alt)
+    emit('command_response', {'status': 'success',
+         'message': f'Moved to {lat}, {lon}, {alt}'})
+    
+@socketio.on('mission')
+def handle_mission(data):
+    mission = data.get('mission')
+    print(mission)
+    drone_controller.mission(mission)
+    emit('command_response', {'status': 'success',
+         'message': f'Mission executed'})
 
 
 @socketio.on('rotate')

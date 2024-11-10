@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Socket } from "socket.io-client";
 import { Point } from "../app";
 import { ArrowPathIcon, CursorArrowRippleIcon, GlobeAltIcon } from "@heroicons/react/16/solid";
+import Loading from "../components/loading";
 
 interface TelemetryProps {
     socket: Socket | null;
@@ -9,8 +10,19 @@ interface TelemetryProps {
     setDroneRotation: (rotation: number) => void;
 }
 
+interface TelemetryData {
+    x: number;
+    y: number;
+    z: number;
+    lat: number;
+    lon: number;
+    roll: number;
+    pitch: number;
+    yaw: number;
+}
+
 const Telemetry = ({ socket, setDronePosition, setDroneRotation }: TelemetryProps) => {
-    const [telemetry, setTelemetry] = useState<any>(null);
+    const [telemetry, setTelemetry] = useState<TelemetryData>();
 
     useEffect(() => {
         if (socket) {
@@ -25,43 +37,45 @@ const Telemetry = ({ socket, setDronePosition, setDroneRotation }: TelemetryProp
         }
     })
 
+    const simpleRound = (value: number) => {
+        return Math.round(value * 100) / 100;
+    }
+
     return (
         <div>
-            <h1>Telemetry</h1>
-            <div className="p-4">
-                <h1 className="text-2xl font-semibold mb-4">Telemetry</h1>
-                <div>
-                    {telemetry ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {Object.entries(telemetry).map(([key, value]) => (
-                                <div key={key} className="flex items-center p-4 bg-gray-100 rounded-lg shadow-md">
-                                    <TelemetryIcon keyName={key} />
-                                    <span className="ml-2 font-medium text-gray-700 capitalize">{key}</span>
-                                    <span className="ml-auto font-semibold text-gray-900">{(Math.round(value as number * 100)/100).toString()}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-gray-500">No telemetry data</p>
-                    )}
+            <h1 className="my-1">Telemetry</h1>
+            {telemetry ? (
+                <div className="flex flex-col gap-1">
+                    <div className="flex flex-row px-1">
+                        <CursorArrowRippleIcon className="h-6 w-6 text-green-500" title="Latitude" />
+                        <span className="font-medium capitalize">Local</span>
+                        <span className="ml-auto font-semibold"><span className="text-red-800">X </span>{simpleRound(telemetry.x)}</span>
+                        <span className="ml-auto font-semibold"><span className="text-green-800">Y </span>{simpleRound(telemetry.y)}</span>
+                        <span className="ml-auto font-semibold"><span className="text-blue-800">Z </span>{simpleRound(-1 * telemetry.z)}</span>
+                    </div>
+                    <div className="flex flex-row px-1">
+                        <GlobeAltIcon className="h-6 w-6 text-blue-500" title="Position" />
+                        <span className="font-medium capitalize">GPS</span>
+                        <span className="ml-auto font-semibold"><span className="text-red-800">LAT </span>{simpleRound(telemetry.lat)}</span>
+                        <span className="ml-auto font-semibold"><span className="text-blue-800">LON </span>{simpleRound(telemetry.lon)}</span>
+                        <span className="ml-auto font-semibold"></span>
+                    </div>
+                    <div className="flex flex-row px-1">
+                        <ArrowPathIcon className="h-6 w-6 text-purple-500" title="Rotation" />
+                        <span className="font-medium capitalize">Rotation</span>
+                        <span className="ml-auto font-semibold"><span className="text-red-800">Roll </span>{simpleRound(telemetry.roll)}</span>
+                        <span className="ml-auto font-semibold"><span className="text-green-800">Pitch </span>{simpleRound(telemetry.pitch)}</span>
+                        <span className="ml-auto font-semibold"><span className="text-blue-800">Yaw </span>{simpleRound(telemetry.yaw)}</span>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="flex flex-row">
+                    <Loading />
+                    <span>Loading telemetry...</span>
+                </div>
+            )}
         </div>
     )
-}
-
-const TelemetryIcon = ({ keyName }: { keyName: string }) => {
-    switch (keyName) {
-        case 'x': return <GlobeAltIcon className="h-6 w-6 text-blue-500" title="X Position" />;
-        case 'y': return <GlobeAltIcon className="h-6 w-6 text-blue-500" title="Y Position" />;
-        case 'z': return <GlobeAltIcon className="h-6 w-6 text-blue-500" title="Altitude (Z)" />;
-        case 'lat': return <CursorArrowRippleIcon className="h-6 w-6 text-green-500" title="Latitude" />;
-        case 'lon': return <CursorArrowRippleIcon className="h-6 w-6 text-green-500" title="Longitude" />;
-        case 'roll': return <ArrowPathIcon className="h-6 w-6 text-purple-500" title="Roll" />;
-        case 'pitch': return <ArrowPathIcon className="h-6 w-6 text-purple-500" title="Pitch" />;
-        case 'yaw': return <ArrowPathIcon className="h-6 w-6 text-purple-500" title="Yaw" />;
-        default: return <GlobeAltIcon className="h-6 w-6 text-gray-500" title={keyName} />;
-    }
 }
 
 export default Telemetry;

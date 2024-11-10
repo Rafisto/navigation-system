@@ -8,25 +8,24 @@ interface ButtonComponentProps {
     loadingMessage?: string;
 }
 
-const ButtonComponent = (props: ButtonComponentProps) => {
+const InlineButtonComponent = (props: ButtonComponentProps) => {
     return (
         <button
             onClick={props.onClick}
-            className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 ${props.className}`}
+            className={`inline-flex items-center px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-green-600 ${props.className}`}
             disabled={props.disabled}
+            style={{ fontSize: '0.75rem' }}
         >
             {props.disabled ? (
-                <span className="flex flex-row">
+                <span className="flex items-center space-x-1">
                     <Loading />
-                    {props.loadingMessage || "Loading..."}
+                    <span>{props.loadingMessage || "Loading..."}</span>
                 </span>
             ) : (
-                <span>
-                    {props.children}
-                </span>
+                <span>{props.children}</span>
             )}
         </button>
     );
 }
 
-export default ButtonComponent;
+export default InlineButtonComponent;

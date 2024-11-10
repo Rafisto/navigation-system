@@ -80,6 +80,25 @@ class DroneController:
         self.connection.mav.send(msg)
         print(f"Moving to offset x: {x}, y: {y}, z: {z}")
 
+    def move_to(self, latitude: float, longitude: float, altitude: float):
+        """Move the drone to a specified global position."""
+        lat = int(latitude * 1e7)
+        lon = int(longitude * 1e7)
+        msg = messages.MAVLink_command_int_message(
+            # ground listed from 255
+            # drone (device) listed from 0
+            self.connection.target_system,  # which drone
+            self.connection.target_component,  # which component
+            messages.MAV_FRAME_GLOBAL_RELATIVE_ALT,  # frame
+            messages.MAV_CMD_DO_REPOSITION,
+            0, 0, 0, 0, 0, 0,
+            lat,
+            lon,
+            altitude
+        )
+        self.connection.mav.send(msg)
+        print(f"Moving to lat: {latitude}, lon: {longitude}, alt: {altitude}")
+
     def rotate(self, yaw: float):
         """Rotate the drone to a specified yaw angle."""
         msg = messages.MAVLink_set_position_target_local_ned_message(
@@ -95,3 +114,67 @@ class DroneController:
         )
         self.connection.mav.send(msg)
         print(f"Rotating to yaw: {yaw}")
+
+    def mission(self, waypoints):
+        """Create a mission from a list of waypoints."""
+        mission_items = []
+
+        # Prepare the mission items
+        for i, waypoint in enumerate(waypoints):
+            lat = int(waypoint["lat"] * 10**7)  # Latitude as an integer
+            lon = int(waypoint["lon"] * 10**7)  # Longitude as an integer
+            alt = 10  # Altitude in meters
+            print(f"Waypoint {i+1}: lat: {lat}, lon: {lon}, alt: {alt}")
+
+            # Set 'current' to 1 for the first waypoint, 0 otherwise
+            current = 1 if i == 0 else 0
+
+            mission_item = messages.MAVLink_mission_item_int_message(
+                self.connection.target_system,
+                self.connection.target_component,
+                i,
+                messages.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                messages.MAV_CMD_NAV_WAYPOINT,
+                current,  # Set current waypoint
+                1,  # Autocontinue
+                0, 0, 0, 0,
+                lat, lon, alt
+            )
+            mission_items.append(mission_item)
+
+        # Step 1: Send MISSION_COUNT
+        self.connection.mav.mission_count_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            len(mission_items)
+        )
+
+        # Step 2: Wait for and respond to MISSION_REQUEST messages
+        for mission_item in mission_items:
+            # Wait for a MISSION_REQUEST for each item
+            request = self.connection.recv_match(
+                type='MISSION_REQUEST', blocking=True)
+            if request and request.seq == mission_item.seq:
+                # Send the requested mission item
+                self.connection.mav.send(mission_item)
+                print(f"Sent mission item {mission_item.seq}")
+
+        # Step 3: Wait for MISSION_ACK
+        # ack = self.connection.recv_match(type='MISSION_ACK', blocking=True)
+        # print(f"Mission upload completed with result {ack}")
+
+        time.sleep(1)
+        print("Starting mission...")
+        
+        # Step 4: Start the mission
+        self.connection.mav.command_long_send(
+            self.connection.target_system,
+            self.connection.target_component,
+            messages.MAV_CMD_MISSION_START,
+            0,  # Confirmation
+            0,  # First waypoint
+            0,  # Last waypoint
+            0, 0, 0, 0, 0
+        )
+
+        print("Mission started")
