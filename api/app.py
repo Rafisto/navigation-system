@@ -34,6 +34,8 @@ def generate_telemetry_data():
             type='LOCAL_POSITION_NED', blocking=True).to_dict()
         gps_raw_int = mavconnection.recv_match(
             type='GPS_RAW_INT', blocking=True).to_dict()
+        attitude = mavconnection.recv_match(
+            type='ATTITUDE', blocking=True).to_dict()
     except OSError:
         print("generate_telemetry_data connection closed abruptly")
         return {}
@@ -42,7 +44,10 @@ def generate_telemetry_data():
             'y': local_position_ned.get('y'),
             'z': local_position_ned.get('z'),
             'lat': gps_raw_int.get('lat') * 10**(-7),
-            'lon': gps_raw_int.get('lon') * 10**(-7)}
+            'lon': gps_raw_int.get('lon') * 10**(-7),
+            'roll': attitude.get('roll'),
+            'pitch': attitude.get('pitch'),
+            'yaw': attitude.get('yaw')}
 
 
 def telemetry_background_task():
@@ -157,21 +162,48 @@ def reposition_drone(data):
                 'status': 'error',
                 'message': f'Error during repositioning: {str(e)}'
             }, broadcast=False)
-            
-            
+
+
 @socketio.on('set_mode')
 def set_mode(data):
     mode = data.get('mode')
     if drone_controller:
         try:
             drone_controller.set_mode(mode)
-            emit('command_response', {'status': 'success', 'message': f'Mode set to {mode}'}, broadcast=False)
+            emit('command_response', {
+                 'status': 'success', 'message': f'Mode set to {mode}'}, broadcast=False)
             print(f"Set mode to {mode}")
         except Exception as e:
-            emit('command_response', {'status': 'error', 'message': f'Error setting mode: {str(e)}'}, broadcast=False)
+            emit('command_response', {
+                 'status': 'error', 'message': f'Error setting mode: {str(e)}'}, broadcast=False)
             print(f"Error setting mode: {str(e)}")
     else:
         print("Drone not connected")
+
+
+@socketio.on('move')
+def handle_move(data):
+    direction = data.get('direction')
+    mask = data.get('mask', 3576)
+    x, y, z = data.get('x', 0), data.get('y', 0), data.get('z', 0)
+
+    if direction == 'up':
+        drone_controller.move(z=-1)
+    elif direction == 'down':
+        drone_controller.move(z=1)
+    elif direction == 'forward':
+        drone_controller.move(x=x, y=y)
+    emit('command_response', {'status': 'success',
+         'message': f'Moved {direction}'})
+
+
+@socketio.on('rotate')
+def handle_rotate(data):
+    yaw = data.get('yaw')
+    drone_controller.rotate(yaw)
+    emit('command_response', {'status': 'success',
+         'message': f'Rotated to yaw {yaw}'})
+
 
 if __name__ == '__main__':
     socketio.run(app=app, host="0.0.0.0", port=5000, debug=True)

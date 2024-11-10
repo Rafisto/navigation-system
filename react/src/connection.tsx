@@ -26,9 +26,7 @@ const MODE_MAP = {
 function MAVLinkConnection({ socket, setSocket, connected, setConnected }: MAVLinkConnectionProps) {
     const [isConnecting, setIsConnecting] = useState<boolean>(false);
     // inputs, todo: move to another modules
-    const [altitude, setAltitude] = useState<number>(10);
-    const [latitude, setLatitude] = useState<number>(0);
-    const [longitude, setLongitude] = useState<number>(0);
+    const [takeoffAltitude, setTakeoffAltitude] = useState<number>(10);
     const [flightMode, setFlightMode] = useState<keyof typeof MODE_MAP>("stabilize");
 
     useEffect(() => {
@@ -83,13 +81,7 @@ function MAVLinkConnection({ socket, setSocket, connected, setConnected }: MAVLi
 
     const takeoffDrone = () => {
         if (socket && connected) {
-            socket.emit('takeoff', { altitude });
-        }
-    };
-
-    const repositionDrone = () => {
-        if (socket && connected) {
-            socket.emit('reposition', { latitude, longitude, altitude });
+            socket.emit('takeoff', { altitude: takeoffAltitude });
         }
     };
 
@@ -155,36 +147,14 @@ function MAVLinkConnection({ socket, setSocket, connected, setConnected }: MAVLi
                         <InputComponent
                             className="flex-grow"
                             type="number"
-                            value={altitude}
-                            onChange={(e) => setAltitude(Number(e.target.value))}
+                            value={takeoffAltitude}
+                            onChange={(e) => setTakeoffAltitude(Number(e.target.value))}
                             placeholder="Altitude"
                         />
                         <ButtonComponent
                             onClick={takeoffDrone}
                         >
                             Takeoff
-                        </ButtonComponent>
-                    </div>
-
-                    <div className="w-auto flex gap-1">
-                        <InputComponent
-                            className="flex-grow"
-                            type="number"
-                            value={latitude}
-                            onChange={(e) => setLatitude(Number(e.target.value))}
-                            placeholder="Latitude"
-                        />
-                        <InputComponent
-                            className="flex-grow"
-                            type="number"
-                            value={longitude}
-                            onChange={(e) => setLongitude(Number(e.target.value))}
-                            placeholder="Longitude"
-                        />
-                        <ButtonComponent
-                            onClick={repositionDrone}
-                        >
-                            Reposition
                         </ButtonComponent>
                     </div>
                 </div>
