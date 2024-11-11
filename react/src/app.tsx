@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Socket } from "socket.io-client";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
 import MapComponent from "./map";
 import MAVLinkConnection from "./connection";
 import Telemetry from "./api/telemetry";
-// import Manual from "./api/manual";
-import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
 import Modes from "./api/modes";
 import Takeoff from "./api/takeoff";
 import Mission from "./api/mission";
 import PointList from "./components/pointlist";
 import Single from "./api/single";
 import Logs from "./api/logs";
+import Manual from "./api/manual";
 
 type Point = {
     longitude: number;
@@ -55,7 +55,7 @@ const App = () => {
                         </>
                     }
                     <MapComponent
-                        drone={dronePosition}
+                        dronePosition={dronePosition}
                         droneRotation={droneRotation}
                         points={points}
                         setPoints={setPoints}
@@ -88,9 +88,9 @@ const App = () => {
                         <Modes socket={socket} />
                         <Telemetry socket={socket} setDronePosition={setDronePosition} setDroneRotation={setDroneRotation} />
                         <Takeoff socket={socket} />
+                        <Manual socket={socket} rotation={droneRotation} />
                         <Single socket={socket} points={points} setPoints={setPoints} setCurrentDestination={setCurrentDestination} />
                         <Mission socket={socket} position={dronePosition} points={points} setPoints={setPoints} setMissionPoints={setMissionPoints} />
-                        {/* <Manual socket={socket} rotation={droneRotation} /> */}
                     </>
                 }
             </div>

@@ -15,6 +15,26 @@ const customIcon = (color: string) => new L.Icon({
     shadowSize: [41, 41],
 });
 
+const droneIcon = (color: string, yaw: number) => {
+    return L.divIcon({
+        className: '',
+        html: `
+            <div style="transform: rotate(${yaw}deg);">
+                <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png" 
+                     style="width: 25px; height: 41px;" />
+            </div>
+        `,
+        iconSize: [25, 41],
+        iconAnchor: [12, 24], // Adjust anchor point to center the image
+        popupAnchor: [1, -34],
+        tooltipAnchor: [16, -28],
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        shadowSize: [41, 41],
+    });
+};
+
+const radiansToDegrees = (radians: number) => 180 + radians * 180 / Math.PI;
+
 const MapContainerStyle: CSSProperties = {
     height: "100%",
     width: "100%",
@@ -23,7 +43,7 @@ const MapContainerStyle: CSSProperties = {
 }
 
 interface MapComponentProps {
-    drone: Point;
+    dronePosition: Point;
     droneRotation: Rotation;
     points: Point[];
     missionPoints?: Point[];
@@ -31,7 +51,7 @@ interface MapComponentProps {
     setPoints: (points: Point[]) => void;
 }
 
-const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoints }: MapComponentProps) => {
+const MapComponent = ({ dronePosition, droneRotation, points, setPoints, currentDestination, missionPoints }: MapComponentProps) => {
     const MapClick = () => {
         const map = useMap();
         map.on('click', (e) => {
@@ -58,9 +78,7 @@ const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoi
                     <Marker position={[point.latitude, point.longitude]} icon={customIcon("red")} eventHandlers={{ click: () => MarkerClick(idx) }} />
                 </div>
             ))}
-            <div key={`marker-drone`} style={{ padding: '5px' }}>
-                <Marker position={[drone.latitude, drone.longitude]} icon={customIcon("blue")} />
-            </div>
+            <Marker position={[dronePosition.latitude, dronePosition.longitude]} icon={droneIcon("blue", radiansToDegrees(droneRotation.yaw))} />
             <Polyline
                 positions={points.map(point => [point.latitude, point.longitude])}
                 color="red"
@@ -74,7 +92,7 @@ const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoi
             }
             {currentDestination &&
                 <><Polyline
-                    positions={[[drone.latitude, drone.longitude], [currentDestination.latitude, currentDestination.longitude]]}
+                    positions={[[dronePosition.latitude, dronePosition.longitude], [currentDestination.latitude, currentDestination.longitude]]}
                     color="yellow"
                 />
                     {/* <Marker position={[currentDestination.latitude, currentDestination.longitude]} icon={customIcon("yellow")} /> */}

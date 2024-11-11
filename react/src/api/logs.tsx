@@ -39,7 +39,7 @@ const Logs = ({ socket }: LogsProps) => {
             <div className="flex flex-col gap-1">
                 {logs.map((log, i) => (
                     <div key={i} className="flex flex-row px-1">
-                        <span className="font-medium capitalize">{new Date(log.date).toISOString()} {log.message}</span>
+                        <span className="font-medium capitalize">{new Date(log.date).toLocaleTimeString()} {log.message}</span>
                     </div>
                 ))}
             </div>

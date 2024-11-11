@@ -24,28 +24,27 @@ const Takeoff = ({ socket }: TakeoffProps) => {
 
 
     return <div>
-        <h1 className="my-1">Takeoff</h1>
-        <div className="space-y-2">
+        <h1>Takeoff</h1>
+        <div className="w-full flex flex-row gap-1">
             <ButtonComponent
+                className="w-full"
                 onClick={armDrone}
             >
                 Arm Drone
             </ButtonComponent>
+            <InputComponent
+                type="number"
+                value={takeoffAltitude}
+                onChange={(e) => setTakeoffAltitude(Number(e.target.value))}
+                placeholder="Altitude"
+            />
+            <ButtonComponent
+                className="w-full"
+                onClick={takeoffDrone}
+            >
+                Takeoff
+            </ButtonComponent>
 
-            <div className="w-auto flex gap-1">
-                <InputComponent
-                    className="flex-grow"
-                    type="number"
-                    value={takeoffAltitude}
-                    onChange={(e) => setTakeoffAltitude(Number(e.target.value))}
-                    placeholder="Altitude"
-                />
-                <ButtonComponent
-                    onClick={takeoffDrone}
-                >
-                    Takeoff
-                </ButtonComponent>
-            </div>
         </div>
     </div>
 }

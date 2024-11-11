@@ -48,22 +48,6 @@ class DroneController:
         self.connection.mav.send(msg)
         print(f"Takeoff initiated to altitude {altitude} meters")
 
-    def reposition(self, latitude: float, longitude: float, altitude: float = 10.0):
-        """Reposition the drone to a specified location and altitude."""
-        lat = int(latitude * 1e7)
-        lon = int(longitude * 1e7)
-        msg = messages.MAVLink_command_int_message(
-            self.connection.target_system,
-            self.connection.target_component,
-            messages.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            messages.MAV_CMD_DO_REPOSITION,
-            0,
-            0, 0, 0, 0, 0, 0, lat, lon, altitude
-        )
-        self.connection.mav.send(msg)
-        print(f"Repositioning to lat: {latitude}, lon: {
-              longitude}, alt: {altitude}")
-
     def move(self, x: float = 0, y: float = 0, z: float = 0):
         """Move the drone in local NED frame based on x, y, and z offsets."""
         msg = messages.MAVLink_set_position_target_local_ned_message(
@@ -165,7 +149,7 @@ class DroneController:
 
         time.sleep(1)
         print("Starting mission...")
-        
+
         # Step 4: Start the mission
         self.connection.mav.command_long_send(
             self.connection.target_system,
