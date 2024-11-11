@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import { Socket } from "socket.io-client";
-import { Point } from "../app";
+import { Point, Rotation } from "../app";
 import { ArrowPathIcon, CursorArrowRippleIcon, GlobeAltIcon } from "@heroicons/react/16/solid";
 import Loading from "../components/loading";
 
 interface TelemetryProps {
     socket: Socket | null;
     setDronePosition: (position: Point) => void;
-    setDroneRotation: (rotation: number) => void;
+    setDroneRotation: (rotation: Rotation) => void;
 }
 
 interface TelemetryData {
@@ -30,8 +30,15 @@ const Telemetry = ({ socket, setDronePosition, setDroneRotation }: TelemetryProp
                 console.log(data);
                 setTelemetry(data);
                 if (data.lat && data.lon) {
-                    setDronePosition({ latitude: data.lat, longitude: data.lon });
-                    setDroneRotation(data.yaw);
+                    setDronePosition({
+                        latitude: data.lat,
+                        longitude: data.lon
+                    });
+                    setDroneRotation({
+                        roll: (data.roll as number),
+                        pitch: (data.pitch as number),
+                        yaw: (data.yaw as number),
+                    });
                 }
             });
         }

@@ -7,14 +7,20 @@ import Telemetry from "./api/telemetry";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
 import Modes from "./api/modes";
 import Takeoff from "./api/takeoff";
-import SinglePointNavigation from "./api/singlepointnavigation";
 import Mission from "./api/mission";
-import Manual from "./api/manual";
 import PointList from "./components/pointlist";
+import Single from "./api/single";
+import Logs from "./api/logs";
 
 type Point = {
     longitude: number;
     latitude: number;
+}
+
+type Rotation = {
+    roll: number;
+    pitch: number;
+    yaw: number;
 }
 
 const App = () => {
@@ -24,20 +30,42 @@ const App = () => {
 
     // map params
     const [dronePosition, setDronePosition] = useState<Point>({ latitude: 0, longitude: 0 });
-    const [droneRotation, setDroneRotation] = useState<number>(0);
+    const [droneRotation, setDroneRotation] = useState<Rotation>({ roll: 0, pitch: 0, yaw: 0 });
     const [points, setPoints] = useState<Point[]>([]);
     const [missionPoints, setMissionPoints] = useState<Point[]>([]);
     const [currentDestination, setCurrentDestination] = useState<Point>();
 
     return <div className="w-screen h-screen flex flex-col">
-        <div>
-            <h1 className="text-lg">Drone Navigation System</h1>
-        </div>
         <div className="grid grid-cols-4 h-full">
             <div className="col-span-3 h-full">
-                <MapComponent drone={dronePosition} points={points} setPoints={setPoints} currentDestination={currentDestination} missionPoints={missionPoints} />
+                <div className="col-span-3 h-full relative">
+                    {connectionAvailable &&
+                        <>
+                            {/* PointList in the lower left corner */}
+                            <div className="absolute bottom-0 left-0 m-4" style={{ zIndex: 100 }}>
+                                <PointList points={points} setPoints={setPoints} />
+                            </div>
+                            <div className="absolute bottom-0 right-0 m-4" style={{ zIndex: 100 }}>
+                                <Logs socket={socket} />
+                            </div>
+                            {/* Telemetry in the lower right corner */}
+                            {/* <div className="absolute top-0 right-0 m-4 z-10">
+                                <Telemetry socket={socket} setDronePosition={setDronePosition} setDroneRotation={setDroneRotation} />
+                            </div> */}
+                        </>
+                    }
+                    <MapComponent
+                        drone={dronePosition}
+                        droneRotation={droneRotation}
+                        points={points}
+                        setPoints={setPoints}
+                        currentDestination={currentDestination}
+                        missionPoints={missionPoints}
+                    />
+                </div>
             </div>
             <div className="col-span-1 flex flex-col px-2">
+                <h1 className="text-center text-lg m-2">Drone Navigation System</h1>
                 <div className="flex flex-row">
                     <h1>Controls</h1>
                     <span className="grow" />
@@ -60,8 +88,7 @@ const App = () => {
                         <Modes socket={socket} />
                         <Telemetry socket={socket} setDronePosition={setDronePosition} setDroneRotation={setDroneRotation} />
                         <Takeoff socket={socket} />
-                        {/* <SinglePointNavigation socket={socket} points={points} setCurrentDestination={setCurrentDestination} /> */}
-                        <PointList points={points} setPoints={setPoints} />
+                        <Single socket={socket} points={points} setPoints={setPoints} setCurrentDestination={setCurrentDestination} />
                         <Mission socket={socket} position={dronePosition} points={points} setPoints={setPoints} setMissionPoints={setMissionPoints} />
                         {/* <Manual socket={socket} rotation={droneRotation} /> */}
                     </>
@@ -72,4 +99,4 @@ const App = () => {
 }
 
 export default App;
-export type { Point };
+export type { Point, Rotation };

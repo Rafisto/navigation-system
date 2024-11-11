@@ -5,8 +5,6 @@ from flask_cors import CORS
 from pymavlink import mavutil
 from pymavlink.dialects.v20 import ardupilotmega as messages
 
-from threading import Thread
-
 import time
 import json
 
@@ -117,11 +115,9 @@ def arm_drone():
     if drone_controller:
         try:
             drone_controller.arm()
-            emit('command_response', {'status': 'success',
-                 'message': 'Drone armed'}, broadcast=False)
+            emit('logs', {'message': 'Arming requested'})
         except Exception as e:
-            emit('command_response', {
-                 'status': 'error', 'message': f'Error arming: {str(e)}'}, broadcast=False)
+            emit('logs', {'message': f'Error during arming: {str(e)}'})
 
 
 @socketio.on('takeoff')
@@ -130,11 +126,9 @@ def takeoff_drone(data):
     if drone_controller:
         try:
             drone_controller.takeoff(altitude)
-            emit('command_response', {'status': 'success', 'message': f'Takeoff initiated to {
-                 altitude}m'}, broadcast=False)
+            emit('logs', {'message': f'Takeoff requested at {altitude}m'})
         except Exception as e:
-            emit('command_response', {
-                 'status': 'error', 'message': f'Error during takeoff: {str(e)}'}, broadcast=False)
+            emit('logs', {'message': f'Error during takeoff: {str(e)}'})
 
 
 @socketio.on('reposition')
@@ -144,24 +138,21 @@ def reposition_drone(data):
     altitude = data.get('altitude', 10.0)
 
     if not latitude or not longitude:
-        emit('command_response', {
-            'status': 'error',
-            'message': 'Missing latitude or longitude for repositioning'
-        }, broadcast=False)
+        emit('logs', {
+            'message': 'Latitude and Longitude are required for repositioning'
+        })
         return
 
     if drone_controller:
         try:
             drone_controller.reposition(latitude, longitude, altitude)
-            emit('command_response', {
-                'status': 'success',
+            emit('logs', {
                 'message': f'Repositioning to {latitude}, {longitude}, {altitude}m'
-            }, broadcast=False)
+            })
         except Exception as e:
-            emit('command_response', {
-                'status': 'error',
+            emit('logs', {
                 'message': f'Error during repositioning: {str(e)}'
-            }, broadcast=False)
+            })
 
 
 @socketio.on('set_mode')
@@ -170,12 +161,10 @@ def set_mode(data):
     if drone_controller:
         try:
             drone_controller.set_mode(mode)
-            emit('command_response', {
-                 'status': 'success', 'message': f'Mode set to {mode}'}, broadcast=False)
+            emit('logs', {'message': f'Set mode to {mode}'})
             print(f"Set mode to {mode}")
         except Exception as e:
-            emit('command_response', {
-                 'status': 'error', 'message': f'Error setting mode: {str(e)}'}, broadcast=False)
+            emit('logs', {'message': f'Error setting mode: {str(e)}'})
             print(f"Error setting mode: {str(e)}")
     else:
         print("Drone not connected")
@@ -193,33 +182,31 @@ def handle_move(data):
         drone_controller.move(z=1)
     elif direction == 'forward':
         drone_controller.move(x=x, y=y)
-    emit('command_response', {'status': 'success',
-         'message': f'Moved {direction}'})
-    
+    emit('logs', {'message': f'Moved {direction}'})
+
+
 @socketio.on('move_to')
 def handle_move_to(data):
     lat = data.get('lat')
     lon = data.get('lon')
     alt = data.get('alt')
     drone_controller.move_to(lat, lon, alt)
-    emit('command_response', {'status': 'success',
-         'message': f'Moved to {lat}, {lon}, {alt}'})
-    
+    emit('logs', {'message': f'Moved to {lat}, {lon}, {alt}'})
+
+
 @socketio.on('mission')
 def handle_mission(data):
     mission = data.get('mission')
     print(mission)
     drone_controller.mission(mission)
-    emit('command_response', {'status': 'success',
-         'message': f'Mission executed'})
+    emit('logs', {'message': 'Mission requested'})
 
 
 @socketio.on('rotate')
 def handle_rotate(data):
     yaw = data.get('yaw')
     drone_controller.rotate(yaw)
-    emit('command_response', {'status': 'success',
-         'message': f'Rotated to yaw {yaw}'})
+    emit('logs', {'message': f'Rotated {yaw} degrees'})
 
 
 if __name__ == '__main__':

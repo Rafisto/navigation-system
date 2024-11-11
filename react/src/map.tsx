@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import { CSSProperties } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, Polyline } from 'react-leaflet';
-import { Point } from './app';
+import { Point, Rotation } from './app';
 
 // const COLORS = ['red', 'blue', 'green', 'gold', 'orange', 'violet', 'grey', 'black'];
 
@@ -18,11 +18,13 @@ const customIcon = (color: string) => new L.Icon({
 const MapContainerStyle: CSSProperties = {
     height: "100%",
     width: "100%",
-    cursor: "default"
+    cursor: "default",
+    zIndex: 1,
 }
 
 interface MapComponentProps {
     drone: Point;
+    droneRotation: Rotation;
     points: Point[];
     missionPoints?: Point[];
     currentDestination?: Point;
@@ -45,7 +47,7 @@ const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoi
     };
 
     return (
-        <MapContainer style={MapContainerStyle} center={[-35.3632621, 149.1652374]} zoom={13} scrollWheelZoom={true}>
+        <MapContainer style={MapContainerStyle} center={[-35.3632621, 149.1652374]} zoom={13} scrollWheelZoom={true} attributionControl={false}>
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -75,7 +77,7 @@ const MapComponent = ({ drone, points, setPoints, currentDestination, missionPoi
                     positions={[[drone.latitude, drone.longitude], [currentDestination.latitude, currentDestination.longitude]]}
                     color="yellow"
                 />
-                    <Marker position={[currentDestination.latitude, currentDestination.longitude]} icon={customIcon("yellow")} />
+                    {/* <Marker position={[currentDestination.latitude, currentDestination.longitude]} icon={customIcon("yellow")} /> */}
                 </>}
 
         </MapContainer>

@@ -24,13 +24,18 @@ const Mission = ({ socket, position, points, setPoints, setMissionPoints }: Mana
 
 
     return <div className="space-y-2">
-        <ButtonComponent
-            onClick={performMission}
-        >
+        {points.length > 0 &&
             <>
-                Perfom Mission {points && points.length.toString()}
+                <h1>Mission</h1>
+                <ButtonComponent
+                    onClick={performMission}
+                >
+                    <>
+                        Perfom Mission {points && points.length.toString()}
+                    </>
+                </ButtonComponent>
             </>
-        </ButtonComponent>
+        }
     </div>
 }
 
