@@ -12,8 +12,6 @@ interface ManaulProps {
 }
 
 function Manual({ socket, rotation }: ManaulProps) {
-    // const [roll, setRoll] = useState<number>(0);
-    // const [pitch, setPitch] = useState<number>(0);
     const [yaw, setYaw] = useState<number>(0);
 
     const rotate = () => {
@@ -25,12 +23,6 @@ function Manual({ socket, rotation }: ManaulProps) {
     const rotateStep = (axis: string, step: number) => {
         if (socket) {
             switch (axis) {
-                // case 'roll':
-                //     socket.emit('rotate', { roll: rotation.roll + step, pitch: pitch, yaw: yaw });
-                //     break;
-                // case 'pitch':
-                //     socket.emit('rotate', { roll: roll, pitch: rotation.pitch + step, yaw: yaw });
-                //     break;
                 case 'yaw':
                     socket.emit('rotate', { yaw: rotation.yaw + step });
                     break;
@@ -42,28 +34,7 @@ function Manual({ socket, rotation }: ManaulProps) {
 
     return (
         <div className="flex flex-col">
-            {/* <span>Roll:</span>
-            <div className="flex flex-row">
-                <InlineButtonComponent onClick={() => rotateStep('roll', Math.PI / 8)}> + </InlineButtonComponent>
-                <InlineButtonComponent onClick={() => rotateStep('roll', -1 * Math.PI / 8)}> - </InlineButtonComponent>
-                <InputComponent
-                    type="number"
-                    value={roll}
-                    onChange={(e) => setRoll(Number(e.target.value))}
-                    placeholder="Roll"
-                />
-            </div>
-            <span>Pitch:</span>
-            <div className="flex flex-row">
-                <InlineButtonComponent onClick={() => rotateStep('pitch', Math.PI / 8)}> + </InlineButtonComponent>
-                <InlineButtonComponent onClick={() => rotateStep('pitch', -1 * Math.PI / 8)}> - </InlineButtonComponent>
-                <InputComponent
-                    type="number"
-                    value={pitch}
-                    onChange={(e) => setPitch(Number(e.target.value))}
-                    placeholder="Pitch"
-                />
-            </div> */}
+            {/* <span>XYZ</span> */}
             <span>Yaw</span>
             <div className="flex flex-row items-center space-x-2">
                 <InlineButtonComponent
