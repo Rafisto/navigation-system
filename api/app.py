@@ -118,18 +118,11 @@ def set_mode(data):
 
 @socketio.on('move')
 def handle_move(data):
-    direction = data.get('direction')
-    mask = data.get('mask', 3576)
     x, y, z = data.get('x', 0), data.get('y', 0), data.get('z', 0)
 
-    if direction == 'up':
-        connection.drone_controller.move(z=-1)
-    elif direction == 'down':
-        connection.drone_controller.move(z=1)
-    elif direction == 'forward':
-        connection.drone_controller.move(x=x, y=y)
-    emit('logs', {'message': f'Moved {direction}'})
+    connection.drone_controller.move(x=x, y=y, z=z)
 
+    emit('logs', {'message': f'Moved by offset: x: {x}, y: {y}, z: {z}'})
 
 @socketio.on('move_to')
 def handle_move_to(data):

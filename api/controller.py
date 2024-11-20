@@ -2,6 +2,7 @@ import time
 from pymavlink import mavutil
 from pymavlink.dialects.v20 import ardupilotmega as messages
 
+VELOCITY_CONST = 5
 
 class DroneController:
     def __init__(self, connection: mavutil.mavlink_connection):
@@ -50,13 +51,14 @@ class DroneController:
 
     def move(self, x: float = 0, y: float = 0, z: float = 0):
         """Move the drone in local NED frame based on x, y, and z offsets."""
+        global VELOCITY_CONST
         msg = messages.MAVLink_set_position_target_local_ned_message(
             0,  # time_boot_ms
             self.connection.target_system,
             self.connection.target_component,
-            messages.MAV_FRAME_LOCAL_NED,
+            messages.MAV_FRAME_LOCAL_OFFSET_NED,
             3576,  # Position control mask
-            x, y, z,
+            x * VELOCITY_CONST, y * VELOCITY_CONST, z,
             0, 0, 0,  # velocity (ignored here)
             0, 0, 0,  # acceleration (ignored here)
             0, 0  # yaw (ignored here)
