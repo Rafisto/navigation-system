@@ -13,15 +13,20 @@ interface ManaulProps {
 }
 
 function Manual({ socket, rotation }: ManaulProps) {
-  const [yaw, setYaw] = useState<number>(0);
+  const [yaw, setYaw] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number }>({
     x: 0,
     y: 0,
   });
 
   const rotate = () => {
+    let yw = parseFloat(yaw);
+    if (isNaN(yw)) {
+      setYaw("");
+      return;
+    }
     if (socket) {
-      socket.emit("rotate", { yaw: yaw });
+      socket.emit("rotate", { yaw: yw });
     }
   };
 
@@ -41,56 +46,63 @@ function Manual({ socket, rotation }: ManaulProps) {
     const interval = setInterval(() => {
       if (position.x !== 0 || position.y !== 0) {
         if (socket) {
-          socket.emit("move", {x: -1 * position.y, y: position.x});
-          console.log("moves", position);
+          socket.emit("move", { x: -1 * position.y, y: position.x });
         }
       }
-    }, 1000);
+    }, 200);
 
     return () => clearInterval(interval);
   }, [position, socket]);
 
   return (
-    <div className="flex flex-col">
-      <span>XYZ</span>
-      <div className="flex flex-row">
-        <Joystick position={position} setPosition={setPosition} />
-      </div>
-      <span>Yaw</span>
-      <div className="flex flex-row items-center space-x-2">
-        <InlineButtonComponent
-          onClick={() => rotateStep("yaw", Math.PI / 8)}
-          className="bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          <div className="flex flex-row">
-            R
-            <PlusIcon className="h-5 w-5" />
+    <div>
+      <h1>Manual</h1>
+      <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="flex flex-col items-center">
+          <span className="mb-2">XY</span>
+          <Joystick position={position} setPosition={setPosition} />
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="mb-2">Yaw</span>
+          <div className="flex flex-row align-center justify-between space-x-2 mb-2">
+            <InlineButtonComponent
+              onClick={() => rotateStep("yaw", Math.PI / 8)}
+              className="bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              <div className="flex flex-row">
+                R
+                <PlusIcon className="h-5 w-5" />
+              </div>
+            </InlineButtonComponent>
+            <InlineButtonComponent
+              onClick={() => rotateStep("yaw", (-1 * Math.PI) / 8)}
+              className="bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              <div className="flex flex-row">
+                <MinusIcon className="h-5 w-5" />
+                L
+              </div>
+            </InlineButtonComponent>
           </div>
-        </InlineButtonComponent>
-        <InlineButtonComponent
-          onClick={() => rotateStep("yaw", (-1 * Math.PI) / 8)}
-          className="bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          <div className="flex flex-row">
-            <MinusIcon className="h-5 w-5" />L
+          <div className="flex flex-row gap-2">
+            <InputComponent
+              type="text"
+              value={yaw}
+              onChange={(e) => setYaw(e.target.value)}
+              placeholder="Yaw"
+              className="border border-gray-300 rounded text-center w-full"
+            />
+            <ButtonComponent
+              onClick={rotate}
+              className="flex items-center bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              <div className="flex flex-row">
+                <ArrowPathIcon className="h-5 w-5" />
+                <span>Rotate</span>
+              </div>
+            </ButtonComponent>
           </div>
-        </InlineButtonComponent>
-        <InputComponent
-          type="number"
-          value={yaw}
-          onChange={(e) => setYaw(Number(e.target.value))}
-          placeholder="Yaw"
-          className="border border-gray-300 rounded text-center w-full"
-        />
-        <ButtonComponent
-          onClick={rotate}
-          className="flex items-center bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          <div className="flex flex-row">
-            <ArrowPathIcon className="h-5 w-5" />
-            <span>Rotate</span>
-          </div>
-        </ButtonComponent>
+        </div>
       </div>
     </div>
   );

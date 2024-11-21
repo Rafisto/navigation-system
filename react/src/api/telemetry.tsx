@@ -32,7 +32,6 @@ const Telemetry = ({ socket, setDronePosition, setDroneRotation }: TelemetryProp
     useEffect(() => {
         if (socket) {
             socket.on('telemetry', (data: any) => {
-                console.log(data);
                 setTelemetry(data);
                 if (data.lat && data.lon) {
                     setDronePosition({
@@ -62,7 +61,6 @@ const Telemetry = ({ socket, setDronePosition, setDroneRotation }: TelemetryProp
     };
 
     const customMode = (mode: number): string => {
-        console.log(mode);
         switch (mode) {
             case 0:
                 return "Stabilize";

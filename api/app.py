@@ -122,7 +122,7 @@ def handle_move(data):
 
     connection.drone_controller.move(x=x, y=y, z=z)
 
-    emit('logs', {'message': f'Moved by offset: x: {x}, y: {y}, z: {z}'})
+    emit('logs', {'message': f'Moved by offset: x: {round(x,2)}, y: {round(y,2)}, z: {round(z,2)}'})
 
 @socketio.on('move_to')
 def handle_move_to(data):

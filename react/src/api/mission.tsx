@@ -14,7 +14,6 @@ const Mission = ({ socket, position, points, setPoints, setMissionPoints }: Mana
 
     const performMission = () => {
         if (socket) {
-            console.info(position);
             let missionPoints = [position, ...points];
             socket.emit('mission', { 'mission': missionPoints.map(point => ({ lat: point.latitude, lon: point.longitude, alt: 15 })) });
             setMissionPoints(missionPoints);

@@ -31,7 +31,6 @@ function MAVLinkConnection({ socket, setSocket, connected, setConnected }: MAVLi
             }
             else {
                 setConnected(false);
-                console.error("error" + response.message);
             }
         });
 

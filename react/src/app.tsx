@@ -11,6 +11,8 @@ import PointList from "./components/pointlist";
 import Single from "./api/single";
 import Logs from "./api/logs";
 import Manual from "./api/manual";
+import ZoneList from "./components/zonelist";
+import PathfindingComponent from "./api/pathfind";
 
 type Point = {
     longitude: number;
@@ -21,6 +23,12 @@ type Rotation = {
     roll: number;
     pitch: number;
     yaw: number;
+}
+
+type Shape = {
+    type: "circle" | "rectangle" | "polygon";
+    points: number[][];
+    radius?: number;
 }
 
 const App = () => {
@@ -34,18 +42,37 @@ const App = () => {
     const [points, setPoints] = useState<Point[]>([]);
     const [missionPoints, setMissionPoints] = useState<Point[]>([]);
     const [currentDestination, setCurrentDestination] = useState<Point>();
+    
+    // path fixing params
+    const [zones, setZones] = useState<Shape[]>([]);
+    const [pathfind, setPathfind] = useState<Point[]>([]);
 
     return <div className="w-screen h-screen flex flex-col">
         <div className="grid grid-cols-4 h-full">
             <div className="col-span-3 h-full">
                 <div className="col-span-3 h-full relative">
+                    <MapComponent
+                        dronePosition={dronePosition}
+                        droneRotation={droneRotation}
+                        points={points}
+                        setPoints={setPoints}
+                        currentDestination={currentDestination}
+                        missionPoints={missionPoints}
+                        zones={zones}
+                        setZones={setZones}
+                        pathfind={pathfind}
+                    />
                     {connectionAvailable &&
                         <>
+                            {/* ZoneList in the top right corner */}
+                            <div className="absolute top-0 right-0 m-4 z-10">
+                                <ZoneList zones={zones} setZones={setZones} />
+                            </div>
                             {/* PointList in the lower left corner */}
-                            <div className="absolute bottom-0 left-0 m-4" style={{ zIndex: 100 }}>
+                            <div className="absolute bottom-20 left-0" style={{ zIndex: 100 }}>
                                 <PointList points={points} setPoints={setPoints} />
                             </div>
-                            <div className="absolute bottom-0 right-0 m-4" style={{ zIndex: 100 }}>
+                            <div className="absolute bottom-20 right-0" style={{ zIndex: 100 }}>
                                 <Logs socket={socket} />
                             </div>
                             {/* Telemetry in the lower right corner */}
@@ -54,14 +81,6 @@ const App = () => {
                             </div> */}
                         </>
                     }
-                    <MapComponent
-                        dronePosition={dronePosition}
-                        droneRotation={droneRotation}
-                        points={points}
-                        setPoints={setPoints}
-                        currentDestination={currentDestination}
-                        missionPoints={missionPoints}
-                    />
                 </div>
             </div>
             <div className="col-span-1 flex flex-col px-2">
@@ -91,6 +110,7 @@ const App = () => {
                         <Manual socket={socket} rotation={droneRotation} />
                         <Single socket={socket} points={points} setPoints={setPoints} setCurrentDestination={setCurrentDestination} />
                         <Mission socket={socket} position={dronePosition} points={points} setPoints={setPoints} setMissionPoints={setMissionPoints} />
+                        <PathfindingComponent dronePosition={dronePosition} currentDestination={points[0]} zones={zones} setPathfind={setPathfind}/>
                     </>
                 }
             </div>
@@ -99,4 +119,4 @@ const App = () => {
 }
 
 export default App;
-export type { Point, Rotation };
+export type { Point, Rotation, Shape };

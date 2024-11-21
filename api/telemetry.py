@@ -1,6 +1,6 @@
 import time
 
-TELEMETRY_POOLING_TIME = 0.1
+TELEMETRY_POOLING_TIME = 0.01
 
 
 def telemetry_background_task(running, mavconnection, socketio):
