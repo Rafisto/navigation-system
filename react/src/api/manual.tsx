@@ -82,9 +82,9 @@ function Manual({ socket, rotation }: ManaulProps) {
             <Joystick1DV position={z} setPosition={setZ} />
           </div>
         </div>
-        <div className="flex flex-col items-center">
-          <span className="mb-2">Yaw</span>
-          <div className="flex flex-row align-center justify-between space-x-2 mb-2">
+        <div className="flex flex-col gap-2">
+          <span className="mb-2 self-center">Yaw</span>
+          <div className="flex flex-row align-center justify-center space-x-2">
             <InlineButtonComponent
               onClick={() => rotateStep("yaw", Math.PI / 8)}
               className="bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -103,24 +103,22 @@ function Manual({ socket, rotation }: ManaulProps) {
               </div>
             </InlineButtonComponent>
           </div>
-          <div className="flex flex-row gap-2">
-            <InputComponent
-              type="text"
-              value={yaw}
-              onChange={(e) => setYaw(e.target.value)}
-              placeholder="Yaw"
-              className="border border-gray-300 rounded text-center w-full"
-            />
-            <ButtonComponent
-              onClick={rotate}
-              className="flex items-center bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              <div className="flex flex-row">
-                <ArrowPathIcon className="h-5 w-5" />
-                <span>Rotate</span>
-              </div>
-            </ButtonComponent>
-          </div>
+          <InputComponent
+            type="text"
+            value={yaw}
+            onChange={(e) => setYaw(e.target.value)}
+            placeholder="Yaw"
+            className="border border-gray-300 rounded text-center"
+          />
+          <ButtonComponent
+            onClick={rotate}
+            className="flex items-center justify-center bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            <div className="flex flex-row">
+              <ArrowPathIcon className="h-5 w-5" />
+              <span>Rotate</span>
+            </div>
+          </ButtonComponent>
         </div>
       </div>
     </div>
