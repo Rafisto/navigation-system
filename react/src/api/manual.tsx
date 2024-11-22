@@ -5,7 +5,8 @@ import InputComponent from "../components/input";
 import InlineButtonComponent from "../components/inlinebutton";
 import { PlusIcon, MinusIcon, ArrowPathIcon } from "@heroicons/react/16/solid";
 import ButtonComponent from "../components/button";
-import Joystick from "../components/joystick";
+import Joystick from "../components/joystick2D";
+import Joystick1DV from "../components/joystick1DV";
 
 interface ManaulProps {
   socket: Socket | null;
@@ -18,6 +19,7 @@ function Manual({ socket, rotation }: ManaulProps) {
     x: 0,
     y: 0,
   });
+  const [z, setZ] = useState<number>(0);
 
   const rotate = () => {
     let yw = parseFloat(yaw);
@@ -54,13 +56,31 @@ function Manual({ socket, rotation }: ManaulProps) {
     return () => clearInterval(interval);
   }, [position, socket]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (z !== 0) {
+        if (socket) {
+          socket.emit("move", { z: -1 * z });
+        }
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [z, socket]);
+
   return (
     <div>
       <h1>Manual</h1>
-      <div className="grid grid-cols-2 gap-4 mt-2">
-        <div className="flex flex-col items-center">
-          <span className="mb-2">XY</span>
-          <Joystick position={position} setPosition={setPosition} />
+      <div className="grid grid-cols-2 gap-6 mt-2">
+        <div className="flex flex-row gap-4 items-center">
+          <div className="flex flex-col items-center">
+            <span className="mb-2">XY</span>
+            <Joystick position={position} setPosition={setPosition} />
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="mb-2">Z</span>
+            <Joystick1DV position={z} setPosition={setZ} />
+          </div>
         </div>
         <div className="flex flex-col items-center">
           <span className="mb-2">Yaw</span>
@@ -79,8 +99,7 @@ function Manual({ socket, rotation }: ManaulProps) {
               className="bg-red-500 text-white rounded hover:bg-red-600"
             >
               <div className="flex flex-row">
-                <MinusIcon className="h-5 w-5" />
-                L
+                <MinusIcon className="h-5 w-5" />L
               </div>
             </InlineButtonComponent>
           </div>

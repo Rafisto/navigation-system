@@ -47,6 +47,13 @@ const App = () => {
     const [zones, setZones] = useState<Shape[]>([]);
     const [pathfind, setPathfind] = useState<Point[]>([]);
 
+    const clearPaths = () => {
+        setPoints([]);
+        setMissionPoints([]);
+        setCurrentDestination(undefined);
+        setPathfind([]);
+    }
+
     return <div className="w-screen h-screen flex flex-col">
         <div className="grid grid-cols-4 h-full">
             <div className="col-span-3 h-full">
@@ -61,6 +68,7 @@ const App = () => {
                         zones={zones}
                         setZones={setZones}
                         pathfind={pathfind}
+                        clearPaths={clearPaths}
                     />
                     {connectionAvailable &&
                         <>
@@ -109,7 +117,7 @@ const App = () => {
                         <Takeoff socket={socket} />
                         <Manual socket={socket} rotation={droneRotation} />
                         <Single socket={socket} points={points} setPoints={setPoints} setCurrentDestination={setCurrentDestination} />
-                        <Mission socket={socket} position={dronePosition} points={points} setPoints={setPoints} setMissionPoints={setMissionPoints} />
+                        <Mission socket={socket} position={dronePosition} points={points} setPoints={setPoints} setMissionPoints={setMissionPoints} zones={zones} path={pathfind}/>
                         <PathfindingComponent dronePosition={dronePosition} currentDestination={points[0]} zones={zones} setPathfind={setPathfind}/>
                     </>
                 }

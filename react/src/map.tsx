@@ -60,9 +60,10 @@ interface MapComponentProps {
     zones: Shape[];
     setZones: (zones: Shape[]) => void;
     pathfind?: Point[];
+    clearPaths: () => void;
 }
 
-const MapComponent = ({ dronePosition, droneRotation, points, setPoints, currentDestination, missionPoints, zones, setZones, pathfind }: MapComponentProps) => {
+const MapComponent = ({ dronePosition, droneRotation, points, setPoints, currentDestination, missionPoints, zones, setZones, pathfind, clearPaths }: MapComponentProps) => {
     const MapClick = () => {
         const map = useMap();
         map.on('click', (e) => {
@@ -211,7 +212,7 @@ const MapComponent = ({ dronePosition, droneRotation, points, setPoints, current
                         color="blue"
                      /> */}
             </MapContainer>
-            <MapToolbar handleCreateShape={handleCreateShape} />
+            <MapToolbar handleCreateShape={handleCreateShape} clearPaths={clearPaths} />
         </div>
     );
 }
