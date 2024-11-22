@@ -24,6 +24,6 @@ vz    int16_t    cm/s    Ground Z Speed (Altitude, positive down)
   - [x] position: possible via invoking MAV_FRAME_LOCAL_OFFSET_NED
 - [x] create rectangular, circular and n-gonal no-fly-zones (can all be done on the frontend)
   - [x] the no-fly zones are defined by the user on the map
-  - [ ] static route recalculation, when the waypoint goes through the no-fly zone
+  - [x] static mission route recalculation, when the waypoint goes through the no-fly zone
   - [x] no snap on no-fly zone, when the waypoint is close to the no-fly zone, it must be at least 2 meters away
-- (optional) (offline) osm map download
+- [ ] (optional) (offline) osm map download
