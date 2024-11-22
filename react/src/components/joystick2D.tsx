@@ -7,12 +7,13 @@ interface JoystickProps {
 
 const Joystick = ({ position, setPosition }: JoystickProps) => {
   const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
 
+      if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
