@@ -30,6 +30,22 @@ class DroneConnection(object):
         try:
             self.mavconnection = mavutil.mavlink_connection(address)
             self.mavconnection.wait_heartbeat()
+            
+            # Set telemetry rate for ATTITUDE (message ID 30) to 10 Hz (100,000 microseconds)
+            message_id = 30  # Message ID for ATTITUDE
+            rate_hz = 100  # Desired rate in Hz
+            interval_us = int(1e6 / rate_hz)  # Convert Hz to microseconds
+
+            # Send SET_MESSAGE_INTERVAL command
+            self.mavconnection.mav.command_long_send(
+                self.mavconnection.target_system,  # Target system ID
+                self.mavconnection.target_component,  # Target component ID
+                mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL,  # Command
+                0,  # Confirmation (0 = no confirmation)
+                message_id,  # Message ID
+                interval_us,  # Interval in microseconds
+                0, 0, 0, 0, 0  # Unused parameters
+            )
             print("Connected successfully")
             return True
         except:
